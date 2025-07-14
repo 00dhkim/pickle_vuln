@@ -1,46 +1,51 @@
-# 파이썬 Pickle 역직렬화 취약점 데모
+# Python Pickle Deserialization Vulnerability Demo
 
-이 프로젝트는 파이썬의 `pickle` 모듈을 사용한 역직렬화(deserialization) 과정에서 발생할 수 있는 원격 코드 실행(RCE) 취약점을 보여주기 위한 데모입니다.
+This project is a simple demonstration of how a Remote Code Execution (RCE) vulnerability can occur during deserialization when using Python’s built-in `pickle` module.
 
-## 설명
+## Description
 
-파이썬의 `pickle` 모듈은 객체 직렬화 및 역직렬화를 위한 강력한 도구이지만, 신뢰할 수 없는 소스에서 생성된 pickle 데이터를 역직렬화할 경우 심각한 보안 위협이 될 수 있습니다.
+Python’s `pickle` module is a powerful tool for serializing and deserializing Python objects. However, if you deserialize pickle data from an untrusted or unverified source, it can pose a serious security threat.
 
-이 데모는 악의적으로 조작된 pickle 파일을 로드할 때, 시스템에서 계산기 애플리케이션이 실행되는 것을 보여줍니다.
+This demo shows how loading a maliciously crafted pickle file can result in executing arbitrary system commands — in this case, launching the calculator application on the system.
 
-- `mal_gen.py`: 계산기를 실행하는 악성 페이로드가 포함된 `malicious.pkl` 파일을 생성합니다.
-- `pkl_load.py`: `malicious.pkl` 파일을 로드하여 취약점을 트리거합니다.
+* **`mal_gen.py`**: Generates a `malicious.pkl` file that contains a payload to launch the calculator.
+* **`pkl_load.py`**: Loads `malicious.pkl` and triggers the vulnerability.
 
-## 실행 방법
+## How to Run
 
-1.  **악성 Pickle 파일 생성:**
+1. **Generate a Malicious Pickle File:**
 
-    ```bash
-    python mal_gen.py
-    ```
+   ```bash
+   python mal_gen.py
+   ```
 
-    이 명령을 실행하면 `malicious.pkl` 파일이 생성됩니다.
+   This command will create a file named `malicious.pkl`.
 
-2.  **취약점 시연:**
+2. **Demonstrate the Vulnerability:**
 
-    ```bash
-    python pkl_load.py
-    ```
+   ```bash
+   python pkl_load.py
+   ```
 
-    이 스크립트를 실행하면 `pickle.load()`가 호출되는 순간, 운영 체제에 따라 계산기가 실행됩니다.
+   When you run this script, `pickle.load()` will execute the payload and launch the calculator (depending on your operating system).
 
-## 보안 경고
+## Security Warning
 
-**절대로 신뢰할 수 없거나 검증되지 않은 소스에서 받은 pickle 파일을 로드하지 마십시오.**
+⚠️ **Never deserialize pickle files from untrusted or unverified sources.**
 
-악의적인 사용자는 pickle 파일을 통해 시스템에서 임의의 코드를 실행하여 데이터를 탈취하거나 시스템을 손상시킬 수 있습니다.
+A malicious attacker can craft a pickle file that executes arbitrary code on your system, potentially leading to data theft, system compromise, or further attacks.
 
-## 탐지 방법
+## Detection
+
+You can scan pickle files for potentially dangerous payloads using tools like [picklescan](https://github.com/Paradoxis/Scavenger). For example:
 
 ```bash
 pip install picklescan
 picklescan -p ./malicious.pkl
 ```
+
+Sample output:
+
 ```
 /path/to/malicious.pkl: dangerous import 'nt system' FOUND
 ----------- SCAN SUMMARY -----------
@@ -49,6 +54,13 @@ Infected files: 1
 Dangerous globals: 1
 ```
 
+### Additional Detection Tips
 
----
-*이 프로젝트는 교육 목적으로만 제작되었습니다.*
+* **Static Analysis:** Look for suspicious imports (`os`, `sys`, `subprocess`) in custom pickle reducers.
+* **Content Inspection:** Use hex editors or tools to inspect the raw pickle bytecode for suspicious opcodes like `GLOBAL` and `REDUCE`.
+* **Runtime Monitoring:** Monitor file loading paths and alert on unexpected system calls during `pickle.load()`.
+* **Safe Alternatives:** Use `pickletools.dis` to disassemble pickle data for manual inspection.
+
+## Disclaimer
+
+*This project is intended for educational purposes only.*
