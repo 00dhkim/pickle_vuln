@@ -35,5 +35,20 @@
 
 악의적인 사용자는 pickle 파일을 통해 시스템에서 임의의 코드를 실행하여 데이터를 탈취하거나 시스템을 손상시킬 수 있습니다.
 
+## 탐지 방법
+
+```bash
+pip install picklescan
+picklescan -p ./malicious.pkl
+```
+```
+/path/to/malicious.pkl: dangerous import 'nt system' FOUND
+----------- SCAN SUMMARY -----------
+Scanned files: 1
+Infected files: 1
+Dangerous globals: 1
+```
+
+
 ---
 *이 프로젝트는 교육 목적으로만 제작되었습니다.*
